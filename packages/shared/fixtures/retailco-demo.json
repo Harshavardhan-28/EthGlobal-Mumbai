@@ -1,0 +1,52 @@
+{
+  "facilityKey": "retailco-net30",
+  "notice": "Fictional demo data. The GSTINs are made up and only pass the format and check-digit rules.",
+  "borrower": {
+    "id": "northstar-agents",
+    "name": "Northstar Agents Pvt Ltd",
+    "type": "COMPANY",
+    "kycStatus": "VERIFIED",
+    "kycMethod": "KYB · demo"
+  },
+  "creditHistory": {
+    "onTimeRepayments": 4,
+    "lateRepayments": 0,
+    "defaults": 0,
+    "openDefaults": 0,
+    "settledAgentPayments": 30,
+    "agentPolicyRejections": 1,
+    "openPrincipalMinor": 0
+  },
+  "receivable": {
+    "invoiceNumber": "INV-2048",
+    "documentType": "INV",
+    "country": "IN",
+    "sellerTaxId": "27AABCN1234K1ZL",
+    "buyerTaxId": "29AAECR5678M1ZI",
+    "buyerType": "BUSINESS",
+    "buyer": "RetailCo",
+    "buyerScore": "A",
+    "operator": "Northstar Agents",
+    "faceValueMinor": 10000000000,
+    "currency": "USDC",
+    "termsDays": 30,
+    "advanceRateBps": 7500
+  },
+  "fundingRequestMinor": 6000000000,
+  "lenders": [
+    { "id": "Alice", "kycStatus": "VERIFIED", "aprBps": 700, "availableMinor": 4000000000, "minBuyerScore": "A-", "maxAdvanceRateBps": 8000, "maxTenorDays": 60, "minTermDays": 30, "riskTier": "A" },
+    { "id": "Bob", "kycStatus": "VERIFIED", "aprBps": 850, "availableMinor": 2000000000, "minBuyerScore": "A-", "maxAdvanceRateBps": 7500, "maxTenorDays": 45, "minTermDays": 30, "riskTier": "A-" },
+    { "id": "Charlie", "kycStatus": "VERIFIED", "aprBps": 1300, "availableMinor": 5000000000, "minBuyerScore": "B", "maxAdvanceRateBps": 9000, "maxTenorDays": 90, "minTermDays": 30, "riskTier": "B" }
+  ],
+  "agents": [
+    { "name": "Research", "role": "Market intelligence", "identity": "research", "allocationMinor": 1000000000, "perTxMinor": 500000, "dailyMinor": 25000000, "merchant": "Briefly Data", "color": "blue" },
+    { "name": "Compute", "role": "Model inference", "identity": "compute", "allocationMinor": 3000000000, "perTxMinor": 250000000, "dailyMinor": 1000000000, "merchant": "Northstar Cloud", "color": "violet" },
+    { "name": "Data", "role": "Data acquisition", "identity": "data", "allocationMinor": 1000000000, "perTxMinor": 25000000, "dailyMinor": 100000000, "merchant": "Signal Index", "color": "green" }
+  ],
+  "lead": { "name": "Lead", "role": "Lead agent · unallocated reserve", "identity": "lead", "merchant": "Northstar Cloud" },
+  "scenarios": {
+    "researchPaymentMinor": 250000,
+    "computeOverspendMinor": 5500000000,
+    "leadCeilingTestMinor": 6500000000
+  }
+}
