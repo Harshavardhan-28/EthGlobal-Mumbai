@@ -1,0 +1,38 @@
+{
+  "name": "autonomous-working-capital",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/web",
+    "packages/shared",
+    "services/aqua-gateway",
+    "services/arc-gateway",
+    "services/hedera-gateway"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace apps/web",
+    "build": "npm run build --workspace apps/web",
+    "api:dev": "cd services/orchestrator && .venv/bin/python -m uvicorn app.main:app --reload --port 8000",
+    "api:test": "cd services/orchestrator && .venv/bin/python -m unittest discover -s tests -t . -v",
+    "adk:run": "cd services/orchestrator && .venv/bin/adk run working_capital_agent",
+    "contracts:setup": "cd contracts/arc && forge install foundry-rs/forge-std@v1.11.0 OpenZeppelin/openzeppelin-contracts@v5.6.1 --no-git",
+    "contracts:build": "cd contracts/arc && forge build && cd ../.. && node scripts/export-artifacts.mjs",
+    "contracts:test": "cd contracts/arc && forge test -vv",
+    "arc:fork": "npm run fork --workspace services/arc-gateway",
+    "arc:fork:setup": "npm run fork:setup --workspace services/arc-gateway",
+    "arc:fork:e2e": "npm run fork:e2e --workspace services/arc-gateway",
+    "arc:gateway": "npm run serve --workspace services/arc-gateway",
+    "aqua:test": "npm run test --workspace services/aqua-gateway",
+    "hedera:testnet:setup": "npm run testnet:setup --workspace services/hedera-gateway",
+    "hedera:ats:prepare": "npm run ats:prepare --workspace services/hedera-gateway",
+    "hedera:ats:verify": "npm run ats:verify --workspace services/hedera-gateway --",
+    "hedera:research:serve": "npm run research:serve --workspace services/hedera-gateway",
+    "hedera:research:pay": "npm run research:pay --workspace services/hedera-gateway",
+    "hedera:x402:gateway": "npm run x402:gateway --workspace services/hedera-gateway",
+    "demo:reset": "node scripts/reset-demo.mjs",
+    "e2e": "node tests/e2e/demo.e2e.mjs",
+    "test:ts": "npm run test --workspace packages/shared && npm run test --workspace services/aqua-gateway && npm run test --workspace services/arc-gateway && npm run test --workspace services/hedera-gateway",
+    "typecheck": "npm run typecheck --workspace apps/web && npm run typecheck --workspace packages/shared && npm run typecheck --workspace services/aqua-gateway && npm run typecheck --workspace services/arc-gateway && npm run typecheck --workspace services/hedera-gateway",
+    "test": "npm run typecheck && npm run test:ts && npm run contracts:test && npm run api:test"
+  }
+}
