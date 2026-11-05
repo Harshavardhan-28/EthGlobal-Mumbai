@@ -1,0 +1,9 @@
+{
+  "notice": "DEMO SCREENING LIST. Fictional entries for testing the gates. This is not a sanctions list. Production must use a real screening provider.",
+  "entries": [
+    { "type": "taxId", "value": "07AAACB4321Q1ZM", "list": "demo-sanctions", "name": "Blocked Trading Co (fictional)" },
+    { "type": "name", "value": "Blocked Trading Co", "list": "demo-sanctions" },
+    { "type": "name", "value": "Shadow Compute Ltd", "list": "demo-sanctions" },
+    { "type": "wallet", "value": "0x00000000000000000000000000000000000B10CC", "list": "demo-sanctions" }
+  ]
+}
