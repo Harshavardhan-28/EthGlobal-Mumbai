@@ -1,0 +1,136 @@
+name: autonomous-working-capital
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: services/orchestrator/Dockerfile
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DATABASE_URL: sqlite:////data/working_capital.db
+      ARC_GATEWAY_URL: ${ARC_GATEWAY_URL_INTERNAL:-http://arc-gateway:4031}
+      HEDERA_GATEWAY_URL: ${HEDERA_GATEWAY_URL_INTERNAL:-http://x402-gateway:4022}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:${WEB_PORT:-3000},http://127.0.0.1:${WEB_PORT:-3000}}
+    ports:
+      - "${API_PORT:-8000}:8000"
+    volumes:
+      - orchestrator_data:/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3).read()"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8000}
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000').then((response) => { if (!response.ok) process.exit(1) }).catch(() => process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
+
+  research:
+    profiles: ["hedera"]
+    build:
+      context: .
+      dockerfile: services/hedera-gateway/Dockerfile
+    env_file:
+      - path: .env
+        required: true
+    environment:
+      HEDERA_BIND_HOST: 0.0.0.0
+    command: ["node", "--import", "tsx", "src/research-service.ts"]
+    ports:
+      - "127.0.0.1:4021:4021"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4021/health').then((response) => { if (!response.ok) process.exit(1) }).catch(() => process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  x402-gateway:
+    profiles: ["hedera"]
+    build:
+      context: .
+      dockerfile: services/hedera-gateway/Dockerfile
+    env_file:
+      - path: .env
+        required: true
+    environment:
+      HEDERA_BIND_HOST: 0.0.0.0
+      HEDERA_ALLOW_INTERNAL_HTTP: "true"
+      HEDERA_RESEARCH_URL: http://research:4021/research
+    command: ["node", "--import", "tsx", "src/payment-api.ts"]
+    depends_on:
+      research:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:4022:4022"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4022/health').then((response) => { if (!response.ok) process.exit(1) }).catch(() => process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # Local Arc mainnet fork with the official 1inch Aqua contracts (profile: arc-fork).
+  # Set ARC_EXECUTION_MODE=gateway in .env so the API uses it.
+  anvil:
+    profiles: ["arc-fork"]
+    image: ghcr.io/foundry-rs/foundry:stable
+    entrypoint: ["anvil", "--host", "0.0.0.0", "--fork-url", "${ARC_MAINNET_RPC_URL:-https://rpc.mainnet.arc.io}", "--chain-id", "5042", "--port", "8545"]
+    ports:
+      - "127.0.0.1:8545:8545"
+
+  arc-setup:
+    profiles: ["arc-fork"]
+    build:
+      context: .
+      dockerfile: services/arc-gateway/Dockerfile
+    environment:
+      ARC_FORK_RPC_URL: http://anvil:8545
+    command: ["node", "--import", "tsx", "src/fork-setup.ts"]
+    volumes:
+      - arc_deployments:/app/deployments
+    depends_on:
+      - anvil
+    restart: on-failure
+
+  arc-gateway:
+    profiles: ["arc-fork"]
+    build:
+      context: .
+      dockerfile: services/arc-gateway/Dockerfile
+    environment:
+      ARC_FORK_RPC_URL: http://anvil:8545
+      ARC_GATEWAY_BIND_HOST: 0.0.0.0
+      ARC_GATEWAY_DATA_DIR: /data
+    volumes:
+      - arc_deployments:/app/deployments
+      - arc_gateway_data:/data
+    depends_on:
+      arc-setup:
+        condition: service_completed_successfully
+    ports:
+      - "127.0.0.1:4031:4031"
+
+volumes:
+  orchestrator_data:
+  arc_deployments:
+  arc_gateway_data:
