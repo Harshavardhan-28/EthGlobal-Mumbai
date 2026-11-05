@@ -1,0 +1,13 @@
+services:
+  api:
+    volumes:
+      - ./services/orchestrator:/app
+      - orchestrator_data:/data
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+
+  web:
+    build:
+      target: development
+    volumes:
+      - ./apps/web:/app/apps/web
+    command: ["sh", "-c", "cd apps/web && ../../node_modules/.bin/next dev --hostname 0.0.0.0 --port 3000"]
